@@ -1,0 +1,380 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "86eb3d4e-959e-42df-803c-09b38106aa1a",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KHFj7hTCUFhd3v54",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama-3.1-8b-instant\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Analyze this email: {{$json.snippet}}. Give output ONLY in this format:\\n\\nType: \\nRole: \\nCompany: \\nSummary: \\nAction:\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "8b44a0d9-aeae-4a9d-9c3e-9acaf8693214",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "16rp5r_jKFFWxoCamCWAAiYYdXtAudcg9tb6_cRsrey0",
+          "mode": "list",
+          "cachedResultName": "Ai job tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16rp5r_jKFFWxoCamCWAAiYYdXtAudcg9tb6_cRsrey0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16rp5r_jKFFWxoCamCWAAiYYdXtAudcg9tb6_cRsrey0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Subject": "={{$json[\"snippet\"]}}",
+            "Type": "={{$json[\"choices\"][0][\"message\"][\"content\"].split(\"\\n\")[0].replace(\"Type: \", \"\").trim()}}",
+            "Role": "={{$json[\"choices\"][0][\"message\"][\"content\"].split(\"\\n\")[1].replace(\"Role: \", \"\").trim()}}",
+            "Company": "={{$json[\"choices\"][0][\"message\"][\"content\"].split(\"\\n\")[2].replace(\"Company: \", \"\").trim()}}",
+            "Summary": "={{$json[\"choices\"][0][\"message\"][\"content\"].split(\"\\n\")[3].replace(\"Summary: \", \"\").trim()}}",
+            "Action": "={{$json[\"choices\"][0][\"message\"][\"content\"].split(\"\\n\")[4].replace(\"Action: \", \"\").trim()}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Type",
+              "displayName": "Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Role",
+              "displayName": "Role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Action",
+              "displayName": "Action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        0
+      ],
+      "id": "6f843bb9-78e7-4895-a65c-17d0d4632d3d",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2diffg9y1t6GSIQf",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\"model\": \"llama-3.1-8b-instant\",\n\"messages\": [\n{\n\"role\": \"user\",\n\"content\": \"Compare this job with my resume.\\n\\nJob Role: {{$json.Role}}\\n\\nMy Resume:\\nName: Harini\\n\\nSkills: Python, NLP, Machine Learning, Flask, NumPy, Pandas\\n\\nProjects:\\n- SMS Classification System (96% accuracy)\\n- Privacy-Preserving ML System\\n\\nReturn:\\nMatch Score (0-100)\\nMissing Skills\\nFit (Yes/No)\"\n}\n]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "1c10abde-8855-4fed-8f13-6e7ca8d2b6df",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\"model\": \"llama-3.1-8b-instant\",\n\"messages\": [\n{\n\"role\": \"user\",\n\"content\": \"Evaluate ATS score.\\n\\nJob Role: {{$json.Role}}\\n\\nResume:\\nPython, NLP, Machine Learning, Flask, NumPy, Pandas\\nProjects: SMS Classification System, Privacy ML\\n\\nReturn ONLY in this format:\\nATS Score:\\nSuggestions:\"\n}\n]\n}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "17dc3bac-6557-4df9-94b1-b9fe84fbcce8",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aa3bfb1f-b86e-45ab-a8b5-8901b2f0eb57",
+              "name": "Role",
+              "value": "={{$json[\"choices\"][0][\"message\"][\"content\"].split(\"\\n\").find(line => line.toLowerCase().includes(\"role\"))?.replace(/Role:\\s*/i, \"\").trim() || \"the role\"}}",
+              "type": "string"
+            },
+            {
+              "id": "656cad4b-67ab-40db-8ecd-51087d9b79c1",
+              "name": "Company",
+              "value": "={{$json[\"choices\"][0][\"message\"][\"content\"].split(\"\\n\").find(line => line.toLowerCase().includes(\"company\"))?.replace(/Company:\\s*/i, \"\").trim() || \"the company\"}}",
+              "type": "string"
+            },
+            {
+              "id": "1c8f1547-f914-4fb8-9708-3fa9ffee9623",
+              "name": "Type",
+              "value": "={{$json[\"choices\"][0][\"message\"][\"content\"].split(\"\\n\").find(line => line.toLowerCase().includes(\"type\"))?.replace(/Type:\\s*/i, \"\").trim() || \"General\"}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        0
+      ],
+      "id": "606f56d6-71b2-497d-b023-be4443fcb7d7",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\"model\": \"llama-3.1-8b-instant\",\n\"messages\": [\n{\n\"role\": \"user\",\n\"content\": \"Subject: Application for {{$node[\"Edit Fields\"].json[\"Role\"] || \"the role\"}}\\n\\nWrite a professional job application email.\\n\\nRole: {{$node[\"Edit Fields\"].json[\"Role\"] || \"the role\"}}\\nCompany: {{$node[\"Edit Fields\"].json[\"Company\"] || \"the company\"}}\\n\\nCandidate:\\nHarini\\nSkills: Python, NLP, Machine Learning, Flask\\nProjects: SMS Classification System, Privacy ML\\n\\nIMPORTANT:\\n- Do NOT use placeholders like [Role]\\n- Use real values\\n- Make it short and professional\"\n}\n]\n}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "5b81458a-8ae6-4221-8bb8-9a5705edabc7",
+      "name": "HTTP Request3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Kolkata",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
+  },
+  "versionId": "4447bd98-5335-49d3-9508-5f82c50bb08c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "25ba2ef02020cbe44bc78193586d5e8369c244986a54c4a0436cc033dad48bed"
+  },
+  "id": "3uac46vHHHXpQqVL",
+  "tags": []
+}
